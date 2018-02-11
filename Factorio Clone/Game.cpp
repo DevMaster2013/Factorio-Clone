@@ -62,14 +62,18 @@ sf::RenderWindow & Game::getRenderWindow()
 
 bool Game::initializeGame()
 {
+#ifdef _DEBUG
 	_renderWindow.create(sf::VideoMode(800, 600), "Factorio Clone", sf::Style::Default);
+#else
+	_renderWindow.create(sf::VideoMode::getDesktopMode(), "Factorio Clone", sf::Style::Fullscreen);
+#endif
 
 	// Initilize the resource manager
 	GameResourceManager::getInstance()->initialize();
 
 	// Run the logo state
 	switchToGameState(new GameLogoState());
-
+	
 	return true;
 }
 

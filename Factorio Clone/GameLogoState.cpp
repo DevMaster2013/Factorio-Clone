@@ -15,21 +15,21 @@ GameLogoState::~GameLogoState()
 bool GameLogoState::onEnterState()
 {
 	// Initialize the logo texture
-	_logoTexture = GameResourceManager::getInstance()->getTexture("factorio-logo");
+	_logoTexture = GameResourceManager::getInstance()->getTexture("background-image-logo");
 	if (_logoTexture == nullptr)
 		return false;
 
-	_logoFont = GameResourceManager::getInstance()->getFont("linden_hill");
-	if (_logoFont == nullptr)
+	_textFont = GameResourceManager::getInstance()->getFont("Lato-Regular");
+	if (_textFont == nullptr)
 		return false;
 
 	_logoSprite = sf::Sprite(*_logoTexture);		
 
 	// Initialize the logo escape text
-	_logoEscapeText.setString("Press Escape to start game....");
-	_logoEscapeText.setFillColor(sf::Color::White);
-	_logoEscapeText.setFont(*_logoFont);
-	_logoEscapeText.setCharacterSize(16);
+	_displayText.setString("Press Escape to start game....");
+	_displayText.setFillColor(sf::Color::White);
+	_displayText.setFont(*_textFont);
+	_displayText.setCharacterSize(16);
 	
 	adjustLogoSpriteSize();
 
@@ -69,7 +69,7 @@ void GameLogoState::onUpdate(float elapsedTime)
 void GameLogoState::onRender()
 {
 	_game->getRenderWindow().draw(_logoSprite);
-	_game->getRenderWindow().draw(_logoEscapeText);
+	_game->getRenderWindow().draw(_displayText);
 }
 
 void GameLogoState::onExitState()
@@ -78,14 +78,23 @@ void GameLogoState::onExitState()
 
 void GameLogoState::adjustLogoSpriteSize()
 {
-	// Adjust the image size
+	// Keep the aspect ratio
 	auto viewSize = _stateView.getSize();
+	float aspectRatio = viewSize.x / (float)viewSize.y;
+
+	// Adjust the image size	
+	_logoSprite.setScale(aspectRatio, aspectRatio);
 	auto textureSize = _logoTexture->getSize();
-	_logoSprite.setScale(viewSize.x / textureSize.x, viewSize.y / textureSize.y);
+
+	// Adjust the sprite position
+	sf::Vector2f spritePos;
+	spritePos.x = viewSize.x / 2.0f - _logoSprite.getGlobalBounds().width / 2.0f;
+	spritePos.y = viewSize.y / 2.0f - _logoSprite.getGlobalBounds().height / 2.0f;
+	_logoSprite.setPosition(spritePos);
 
 	// Adjust the text position
 	sf::Vector2f textPos;
-	textPos.x = viewSize.x / 2.0f - _logoEscapeText.getGlobalBounds().width / 2.0f;
-	textPos.y = viewSize.y / 2.0f - _logoEscapeText.getGlobalBounds().height / 2.0f + (150.0f * viewSize.y / textureSize.y);
-	_logoEscapeText.setPosition(textPos);
+	textPos.x = viewSize.x / 2.0f - _displayText.getGlobalBounds().width / 2.0f;
+	textPos.y = viewSize.y / 2.0f - _displayText.getGlobalBounds().height / 2.0f + _logoSprite.getGlobalBounds().height;
+	_displayText.setPosition(textPos);
 }

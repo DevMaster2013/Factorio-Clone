@@ -5,10 +5,12 @@ class GameResourceManager
 {
 private:
 	static GameResourceManager* _instance;
+	std::thread texturesThreadLoad;
 
 private:
 	ResourceHolder<sf::Texture>* _textures;
 	ResourceHolder<sf::Font>* _fonts;
+	std::function<void(const std::string&, size_t, size_t)> _callbackFunction;
 
 private:
 	GameResourceManager();
@@ -21,6 +23,10 @@ public:
 public:
 	void initialize();
 	void release();
+
+public:
+	void loadAllResources();
+	void setProgressCallback(std::function<void(const std::string&, size_t, size_t)> callback);
 
 public:
 	sf::Texture* getTexture(const std::string& textureName);

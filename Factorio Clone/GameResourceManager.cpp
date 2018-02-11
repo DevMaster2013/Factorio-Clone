@@ -29,14 +29,38 @@ void GameResourceManager::releaseInstance()
 
 void GameResourceManager::initialize()
 {
-	_textures = new	ResourceHolder<sf::Texture>("media/graphics/graphics.ini");
-	_fonts = new ResourceHolder<sf::Font>("media/fonts/fonts.ini");
+	_textures = new	ResourceHolder<sf::Texture>("media/graphics");
+	_fonts = new ResourceHolder<sf::Font>("media/fonts");
 }
 
 void GameResourceManager::release()
 {
 	if (_textures != nullptr) _textures->releaseAll();
 	if (_fonts != nullptr) _fonts->releaseAll();
+}
+
+void GameResourceManager::loadAllResources()
+{
+	size_t maxValue = 0;
+	maxValue += _textures->getResourcesCount();
+	maxValue += _fonts->getResourcesCount();
+
+	// Set call bck function
+	size_t resourcesCount = 0;
+	_textures->setProgressCallback(_callbackFunction, "Loading textures...", resourcesCount, maxValue); resourcesCount += _textures->getResourcesCount();
+	_fonts->setProgressCallback(_callbackFunction, "Loading fonts...", resourcesCount, maxValue); resourcesCount += _fonts->getResourcesCount();
+
+	// Load all resources
+	texturesThreadLoad = std::thread([&]() {_textures->loadAll(); });
+//	std::thread fontsThreadLoad([&]() {_fonts->loadAll(); });
+//
+//	texturesThreadLoad.join();
+//	fontsThreadLoad.join();
+}
+
+void GameResourceManager::setProgressCallback(std::function<void(const std::string&, size_t, size_t)> callback)
+{
+	_callbackFunction = callback;
 }
 
 sf::Texture* GameResourceManager::getTexture(const std::string & textureName)

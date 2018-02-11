@@ -5,9 +5,11 @@ template class ResourceHolder<sf::Texture>;
 template class ResourceHolder<sf::Font>;
 
 template<typename T>
-ResourceHolder<T>::ResourceHolder(const std::string & configFile)
+ResourceHolder<T>::ResourceHolder(const std::string & resourcePath)
 {
-	loadConfigFile(configFile);
+	_maxValue = 0;
+	_oldSize = 0;
+	loadConfigFile(resourcePath);
 }
 
 template<typename T>
@@ -18,6 +20,13 @@ ResourceHolder<T>::~ResourceHolder()
 template<typename T>
 void ResourceHolder<T>::loadAll()
 {
+	size_t count = 0;
+	for each (auto& res in _resourcesPathesMap)
+	{
+		count++;
+		get(res.first);
+		_callbackFunction(_progressText, count + _oldSize, _maxValue);
+	}
 }
 
 template<typename T>
@@ -28,6 +37,21 @@ void ResourceHolder<T>::releaseAll()
 			delete res.second;
 	_resourcesMap.clear();
 	_resourcesPathesMap.clear();
+}
+
+template<typename T>
+size_t ResourceHolder<T>::getResourcesCount()
+{
+	return _resourcesPathesMap.size();
+}
+
+template<typename T>
+void ResourceHolder<T>::setProgressCallback(std::function<void(const std::string&, size_t, size_t)> callback, const std::string& progressText, size_t oldSize, size_t maxValue)
+{
+	_progressText = progressText;
+	_oldSize = oldSize;
+	_maxValue = maxValue;
+	_callbackFunction = callback;
 }
 
 template<typename T>
@@ -62,18 +86,18 @@ void ResourceHolder<T>::parseConfigLine(const std::string & line, std::string & 
 }
 
 template<typename T>
-void ResourceHolder<T>::loadConfigFile(const std::string & configFile)
-{
-	std::string configFilePath = configFile.substr(0, configFile.find_last_of("/") + 1);
-	std::ifstream config(configFile);
-	while (!config.eof())
+void ResourceHolder<T>::loadConfigFile(const std::string & resourcePath)
+{	
+	for (auto & p : std::experimental::filesystem::directory_iterator(resourcePath))
 	{
-		std::string line, key, value;
-		
-		std::getline(config, line);
-		if (line.empty()) continue;
-
-		parseConfigLine(line, key, value);
-		_resourcesPathesMap[key] = configFilePath + value;
+		if (std::experimental::filesystem::is_directory(p.path()))
+			loadConfigFile(p.path().string());
+		else
+		{
+			std::string key = p.path().filename().string();
+			const std::string& value = resourcePath + "\\" + key;
+			key = key.substr(0, key.find("."));			
+			_resourcesPathesMap[key] = value;
+		}
 	}
 }
