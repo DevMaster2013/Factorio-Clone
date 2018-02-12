@@ -1,15 +1,17 @@
 #pragma once
 
 #include "ResourceHolder.h"
+#include "ResourceDictionary.h"
+
 class GameResourceManager
 {
 private:
 	static GameResourceManager* _instance;
-	std::thread texturesThreadLoad;
 
 private:
+	ResourceDictionary _resourcesDictionary;
 	ResourceHolder<sf::Texture>* _textures;
-	ResourceHolder<sf::Font>* _fonts;
+	ResourceHolder<sf::Font>* _fonts;	
 	std::function<void(const std::string&, size_t, size_t)> _callbackFunction;
 
 private:
@@ -23,9 +25,9 @@ public:
 public:
 	void initialize();
 	void release();
+	void loadResources(ResourcePriority priority);
 
 public:
-	void loadAllResources();
 	void setProgressCallback(std::function<void(const std::string&, size_t, size_t)> callback);
 
 public:

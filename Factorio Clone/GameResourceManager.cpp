@@ -29,33 +29,60 @@ void GameResourceManager::releaseInstance()
 
 void GameResourceManager::initialize()
 {
-	_textures = new	ResourceHolder<sf::Texture>("media/graphics");
-	_fonts = new ResourceHolder<sf::Font>("media/fonts");
+	_resourcesDictionary.initialize();
+
+	_textures = new	ResourceHolder<sf::Texture>();
+	_fonts = new ResourceHolder<sf::Font>();
 }
 
 void GameResourceManager::release()
 {
-	if (_textures != nullptr) _textures->releaseAll();
-	if (_fonts != nullptr) _fonts->releaseAll();
+	if (_textures != nullptr) 
+		delete _textures;
+	_textures = nullptr;
+	if (_fonts != nullptr)
+		delete _fonts;
+	_fonts = nullptr;
 }
 
-void GameResourceManager::loadAllResources()
+void GameResourceManager::loadResources(ResourcePriority priority)
 {
-	size_t maxValue = 0;
-	maxValue += _textures->getResourcesCount();
-	maxValue += _fonts->getResourcesCount();
+	// Get the resources from the dictionary
+	auto resourcesList = _resourcesDictionary.getResourcesByPriority(priority);
 
-	// Set call bck function
+	// Count the resources
 	size_t resourcesCount = 0;
-	_textures->setProgressCallback(_callbackFunction, "Loading textures...", resourcesCount, maxValue); resourcesCount += _textures->getResourcesCount();
-	_fonts->setProgressCallback(_callbackFunction, "Loading fonts...", resourcesCount, maxValue); resourcesCount += _fonts->getResourcesCount();
+	for each (auto& resType in resourcesList)	
+		resourcesCount += resType.second.size();
 
-	// Load all resources
-	texturesThreadLoad = std::thread([&]() {_textures->loadAll(); });
-//	std::thread fontsThreadLoad([&]() {_fonts->loadAll(); });
-//
-//	texturesThreadLoad.join();
-//	fontsThreadLoad.join();
+	// Load the resources
+	size_t resourceIndex = 0;
+	for each (auto& resType in resourcesList)
+	{
+		switch (resType.first)
+		{
+		case ResourceType::TEXTURE:
+			for each (auto& resID in resType.second)
+			{
+				resourceIndex++;
+				if (_callbackFunction != nullptr)
+					_callbackFunction("Loading Textures...", resourceIndex, resourcesCount);
+				_textures->get(resID.second.resID, resID.second.resPath);
+			}
+			break;
+		case ResourceType::FONT:
+			for each (auto& resID in resType.second)
+			{
+				resourceIndex++;
+				if (_callbackFunction != nullptr)
+					_callbackFunction("Loading Fonts...", resourceIndex, resourcesCount);
+				_fonts->get(resID.second.resID, resID.second.resPath);
+			}
+			break;
+		default:
+			break;
+		}		
+	}
 }
 
 void GameResourceManager::setProgressCallback(std::function<void(const std::string&, size_t, size_t)> callback)
@@ -65,14 +92,22 @@ void GameResourceManager::setProgressCallback(std::function<void(const std::stri
 
 sf::Texture* GameResourceManager::getTexture(const std::string & textureName)
 {
+	ResourceID& resID = _resourcesDictionary.getResource(ResourceType::TEXTURE, textureName);
+	if (resID.priority == ResourcePriority::INVALID)
+		return nullptr;
+
 	if (_textures != nullptr)
-		return _textures->get(textureName);
+		return _textures->get(textureName, resID.resPath);
 	return nullptr;
 }
 
 sf::Font* GameResourceManager::getFont(const std::string & fontName)
 {
+	ResourceID resID = _resourcesDictionary.getResource(ResourceType::FONT, fontName);
+	if (resID.priority == ResourcePriority::INVALID)
+		return nullptr;
+
 	if (_fonts != nullptr)
-		return _fonts->get(fontName);
+		return _fonts->get(fontName, resID.resPath);
 	return nullptr;
 }

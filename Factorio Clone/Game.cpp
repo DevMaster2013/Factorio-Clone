@@ -68,8 +68,9 @@ bool Game::initializeGame()
 	_renderWindow.create(sf::VideoMode::getDesktopMode(), "Factorio Clone", sf::Style::Fullscreen);
 #endif
 
-	// Initilize the resource manager
+	// Initilize the resource manager and load the introduction assets
 	GameResourceManager::getInstance()->initialize();
+	GameResourceManager::getInstance()->loadResources(ResourcePriority::INTRODUCTIOIN);
 
 	// Run the logo state
 	switchToGameState(new GameLogoState());

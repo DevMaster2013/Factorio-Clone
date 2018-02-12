@@ -8,6 +8,7 @@ private:
 	sf::RectangleShape _progressBar;
 	size_t _currentProgress;
 	size_t _maxProgressValue;
+	std::thread _loadingThread;
 
 public:
 	GameLoadingState();

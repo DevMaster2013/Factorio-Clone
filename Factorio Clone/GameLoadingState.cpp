@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "GameLoadingState.h"
+#include "GameMainMenuState.h"
 #include "GameResourceManager.h"
 #include "Game.h"
 
@@ -35,7 +36,9 @@ bool GameLoadingState::onEnterState()
 	// Set the progress callback function	
 	auto func = std::bind(&GameLoadingState::progressCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	GameResourceManager::getInstance()->setProgressCallback(func);
-	GameResourceManager::getInstance()->loadAllResources();
+
+	// Load the core resources
+	_loadingThread = std::thread([]() {GameResourceManager::getInstance()->loadResources(ResourcePriority::CORE); });
 
 	return true;
 }
@@ -59,8 +62,8 @@ void GameLoadingState::onUpdate(float elapsedTime)
 	progressSize.x = _currentProgress * _logoSprite.getGlobalBounds().width / (float)_maxProgressValue;
 	_progressBar.setSize(progressSize);
 
-//	if (_currentProgress >= _maxProgressValue)
-//		_game->switchToGameState(new GameLogoState());
+	if (_currentProgress >= _maxProgressValue)
+		_game->switchToGameState(new GameMainMenuState());
 }
 
 void GameLoadingState::onRender()
@@ -72,7 +75,8 @@ void GameLoadingState::onRender()
 
 void GameLoadingState::onExitState()
 {
-	GameLogoState::onExitState();
+	_loadingThread.join();
+	GameLogoState::onExitState();	
 }
 
 void GameLoadingState::adjustLogoSpriteSize()
@@ -88,7 +92,7 @@ void GameLoadingState::adjustLogoSpriteSize()
 	textPos.y = viewSize.y / 2.0f - _displayText.getGlobalBounds().height / 2.0f + _logoSprite.getGlobalBounds().height + _displayText.getGlobalBounds().height + 10.0f;
 	_displayText.setPosition(textPos);
 
-	textPos.x = spriteBounds.left + spriteBounds.width - _progressValueText.getGlobalBounds().width;
+	textPos.x = spriteBounds.left + spriteBounds.width - 36.0f;
 	textPos.y = viewSize.y / 2.0f - _progressValueText.getGlobalBounds().height / 2.0f + _logoSprite.getGlobalBounds().height + _displayText.getGlobalBounds().height;
 	_progressValueText.setPosition(textPos);
 

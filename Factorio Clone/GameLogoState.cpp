@@ -19,7 +19,7 @@ bool GameLogoState::onEnterState()
 	if (_logoTexture == nullptr)
 		return false;
 
-	_textFont = GameResourceManager::getInstance()->getFont("Lato-Regular");
+	_textFont = GameResourceManager::getInstance()->getFont("Lato-Semibold");
 	if (_textFont == nullptr)
 		return false;
 

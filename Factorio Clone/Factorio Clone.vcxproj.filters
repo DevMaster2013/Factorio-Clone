@@ -36,6 +36,15 @@
     <ClInclude Include="ResourceHolder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ResourceDictionary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameMainMenuState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -60,6 +69,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ResourceHolder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceDictionary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameMainMenuState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
